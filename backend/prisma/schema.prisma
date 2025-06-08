@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model NotificationLog {
+  id        Int      @id @default(autoincrement())
+  to        String
+  channel   String   // "email", "sms", "in-app"
+  message   String
+  status    String   // "success", "failed"
+  error     String?  // Optional, for error messages
+  attempt   Int      @default(1)  // ✅ New: track retry count
+  createdAt DateTime @default(now())
+}
+
+model ScheduledNotification {
+  id        Int      @id @default(autoincrement())
+  to        String
+  channel   String
+  message   String
+  sendAt    DateTime
+  status    String   @default("pending") // "pending", "queued", "sent"
+  createdAt DateTime @default(now())
+}

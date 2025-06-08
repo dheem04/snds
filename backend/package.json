@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-  "worker": "ts-node-dev --respawn --transpile-only src/worker/notificationWorker.ts",
-  "build": "tsc",
-  "start": "node dist/index.js"
-}
-,
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "worker": "ts-node-dev --respawn --transpile-only src/worker/notificationWorker.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -30,6 +29,7 @@
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.30",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",

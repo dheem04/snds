@@ -4,6 +4,7 @@ import { sendSMS } from '../services/smsService';
 import { sendInApp } from '../services/inAppService';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import { redisConnection } from '../utils/redis';
 dotenv.config();
 
 const prisma = new PrismaClient();
@@ -42,10 +43,7 @@ const worker = new Worker(
     }
   },
   {
-    connection: {
-      host: 'localhost',
-      port: 6379,
-    },
+    connection: redisConnection
   }
 );
 

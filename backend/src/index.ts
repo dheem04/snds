@@ -23,7 +23,15 @@ const app = express();
 app.use('/api/logs', logsRouter);
 app.use(express.json());
 app.use('/api/docs', swaggerRouter);
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://dheenotifications.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: false
+}));
+
 // Create HTTP and WebSocket servers
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

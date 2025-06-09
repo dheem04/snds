@@ -37,3 +37,4 @@ export async function sendEmail(to: string, message: string) {
     console.error(`❌ Failed to send email to ${to}:`, err);
   }
 }
+//check if the environment variables are set

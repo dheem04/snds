@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
   // Join a room using socket ID (or user ID later)
   socket.join(socket.id);
 
-  // Emit initial connected message
+  // Emit initial xconnected message
   socket.emit('connected', { id: socket.id });
 });
 

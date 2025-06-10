@@ -20,9 +20,7 @@ const prisma = new PrismaClient();
 
 // Create Express app
 const app = express();
-app.use('/api/logs', logsRouter);
-app.use(express.json());
-app.use('/api/docs', swaggerRouter);
+
 app.use(cors({
   origin: [
     "http://localhost:3000",
@@ -31,6 +29,12 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: false
 }));
+
+app.use(express.json());
+app.use('/api/logs', logsRouter);
+
+app.use('/api/docs', swaggerRouter);
+
 
 // Create HTTP and WebSocket servers
 const httpServer = createServer(app);

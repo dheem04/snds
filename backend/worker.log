@@ -1,0 +1,18 @@
+
+> backend@1.0.0 worker
+> ts-node-dev --respawn --transpile-only src/worker/notificationWorker.ts
+
+[INFO] 18:51:41 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.8.3)
+🔄 Notification worker started
+Processing notification job 1: email to test@example.com
+✅ Email service connected successfully
+📧 Email sent to test@example.com: <28652805-3b75-5d0f-c439-8808b541818b@gmail.com>
+✅ email notification sent to test@example.com in 1040ms
+✅ Job 1 completed successfully
+Processing notification job 2: email to dheemanthmadaiah@gmail.com
+📧 Email sent to dheemanthmadaiah@gmail.com: <2fe5db5b-ed21-8a20-8c37-96651ad52a9d@gmail.com>
+✅ email notification sent to dheemanthmadaiah@gmail.com in 2363ms
+✅ Job 2 completed successfully
+Processing notification job 3: sms to +919686490654
+✅ sms notification sent to +919686490654 in 328ms
+✅ Job 3 completed successfully

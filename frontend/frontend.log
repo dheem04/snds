@@ -17,3 +17,24 @@ https://nextjs.org/telemetry
  ○ Compiling / ...
  ✓ Compiled / in 2.7s
  HEAD / 200 in 3028ms
+ GET / 200 in 85ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 1175ms
+ GET /auth/login 200 in 1277ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1572ms
+ GET /dashboard 200 in 1618ms
+ GET /dashboard 200 in 151ms
+ ✓ Compiled in 94ms
+ GET /dashboard 200 in 102ms
+ GET /dashboard 200 in 33ms
+ ✓ Compiled in 99ms
+ GET /dashboard 200 in 132ms
+ GET /dashboard 200 in 34ms
+ ✓ Compiled in 161ms
+ ○ Compiling /dashboard/send ...
+ ✓ Compiled /dashboard/send in 1219ms
+ GET /dashboard/send 200 in 1402ms
+ ○ Compiling /logs ...
+ ✓ Compiled /logs in 1065ms
+ GET /logs 200 in 1109ms

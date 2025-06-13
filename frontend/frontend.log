@@ -48,3 +48,27 @@ https://nextjs.org/telemetry
  GET /dashboard 200 in 42ms
  GET /dashboard/send 200 in 39ms
  GET /logs 200 in 37ms
+ ✓ Compiled in 160ms
+ ✓ Compiled in 146ms
+ ✓ Compiled in 141ms
+ ✓ Compiled in 129ms
+ ✓ Compiled in 124ms
+ ✓ Compiled in 130ms
+ ✓ Compiled in 157ms
+ ✓ Compiled in 182ms
+ ○ Compiling /dashboard/templates ...
+ ✓ Compiled /dashboard/templates in 1171ms
+ GET /dashboard/templates 200 in 1240ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 143ms
+ GET /dashboard/templates 200 in 232ms
+ GET /dashboard/templates 200 in 66ms
+ GET /dashboard/send 200 in 135ms
+ GET /dashboard/send 200 in 133ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 167ms
+ GET /dashboard/send 200 in 253ms
+ GET /dashboard/send 200 in 64ms
+ GET /logs 200 in 103ms
+ GET /dashboard/send 200 in 63ms
+ GET /logs 200 in 57ms

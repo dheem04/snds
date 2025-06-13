@@ -7,3 +7,15 @@
 🚀 Dheenotifications API v2.0 listening on port 4000
 📚 API Documentation: http://localhost:4000/api/docs
 🏥 Health Check: http://localhost:4000/health
+[INFO] 20:26:14 Restarting: /workspace/dheenotifications/backend/src/routes/templates.ts has been modified
+SIGTERM received, shutting down gracefully
+📅 Scheduler started - checking for due notifications every minute
+🚀 Dheenotifications API v2.0 listening on port 4000
+📚 API Documentation: http://localhost:4000/api/docs
+🏥 Health Check: http://localhost:4000/health
+[INFO] 20:26:22 Restarting: /workspace/dheenotifications/backend/src/routes/templates.ts has been modified
+SIGTERM received, shutting down gracefully
+📅 Scheduler started - checking for due notifications every minute
+🚀 Dheenotifications API v2.0 listening on port 4000
+📚 API Documentation: http://localhost:4000/api/docs
+🏥 Health Check: http://localhost:4000/health

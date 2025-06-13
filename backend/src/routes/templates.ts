@@ -6,6 +6,28 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 const prisma = new PrismaClient();
 const router = express.Router();
 
+// Helper function to extract variables from template content
+function extractVariables(content: string, subject?: string): string[] {
+  const variableRegex = /\{\{(\w+)\}\}/g;
+  const variables = new Set<string>();
+  
+  // Extract from content
+  let match;
+  while ((match = variableRegex.exec(content)) !== null) {
+    variables.add(match[1]);
+  }
+  
+  // Extract from subject if provided
+  if (subject) {
+    variableRegex.lastIndex = 0; // Reset regex
+    while ((match = variableRegex.exec(subject)) !== null) {
+      variables.add(match[1]);
+    }
+  }
+  
+  return Array.from(variables);
+}
+
 // Get all templates for user
 router.get('/', authenticateToken, async (req: AuthRequest, res: express.Response): Promise<void> => {
   try {
@@ -97,6 +119,9 @@ router.post('/',
         return;
       }
 
+      // Auto-extract variables from content and subject
+      const extractedVariables = extractVariables(content, subject);
+
       const template = await prisma.notificationTemplate.create({
         data: {
           userId,
@@ -104,7 +129,7 @@ router.post('/',
           channel,
           content,
           subject: channel === 'email' ? subject : null,
-          variables: variables || [],
+          variables: variables || extractedVariables,
         },
       });
 

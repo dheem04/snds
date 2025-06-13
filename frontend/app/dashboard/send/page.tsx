@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -20,6 +20,15 @@ const CHANNELS = [
   { id: 'in-app', name: 'In-App', icon: ComputerDesktopIcon, color: 'bg-purple-500' },
 ];
 
+interface Template {
+  id: number;
+  name: string;
+  channel: string;
+  subject?: string;
+  content: string;
+  variables: string[];
+}
+
 export default function SendNotificationPage() {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
@@ -30,24 +39,91 @@ export default function SendNotificationPage() {
     sendAt: '',
     isBulk: false,
     recipients: '',
+    templateId: '',
+    templateVariables: {} as Record<string, string>,
   });
   const [loading, setLoading] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api';
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/templates`);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
+    }
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    const template = templates.find(t => t.id.toString() === templateId);
+    if (template) {
+      setSelectedTemplate(template);
+      setFormData({
+        ...formData,
+        templateId,
+        channel: template.channel,
+        message: template.content,
+        subject: template.subject || '',
+        templateVariables: template.variables.reduce((acc, variable) => {
+          acc[variable] = '';
+          return acc;
+        }, {} as Record<string, string>),
+      });
+    } else {
+      setSelectedTemplate(null);
+      setFormData({
+        ...formData,
+        templateId: '',
+        templateVariables: {},
+      });
+    }
+  };
+
+  const processTemplateContent = (content: string, variables: Record<string, string>) => {
+    let processedContent = content;
+    Object.entries(variables).forEach(([key, value]) => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      processedContent = processedContent.replace(regex, value || `{{${key}}}`);
+    });
+    return processedContent;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let finalMessage = formData.message;
+      let finalSubject = formData.subject;
+
+      // Process template variables if template is selected
+      if (selectedTemplate && formData.templateId) {
+        finalMessage = processTemplateContent(formData.message, formData.templateVariables);
+        if (formData.subject) {
+          finalSubject = processTemplateContent(formData.subject, formData.templateVariables);
+        }
+      }
+
       const payload: any = {
         channel: formData.channel,
-        message: formData.message,
+        message: finalMessage,
       };
 
+      // Add template info if selected
+      if (formData.templateId) {
+        payload.templateId = parseInt(formData.templateId);
+      }
+
       // Add subject for email
-      if (formData.channel === 'email' && formData.subject) {
-        payload.subject = formData.subject;
+      if (formData.channel === 'email' && finalSubject) {
+        payload.subject = finalSubject;
       }
 
       // Handle bulk vs single notification
@@ -88,7 +164,10 @@ export default function SendNotificationPage() {
         sendAt: '',
         isBulk: false,
         recipients: '',
+        templateId: '',
+        templateVariables: {},
       });
+      setSelectedTemplate(null);
 
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to send notification');
@@ -160,6 +239,33 @@ export default function SendNotificationPage() {
                   </label>
                 </div>
 
+                {/* Template Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <DocumentTextIcon className="h-4 w-4 inline mr-1" />
+                    Use Template (Optional)
+                  </label>
+                  <select
+                    value={formData.templateId}
+                    onChange={(e) => handleTemplateSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Select a template or create custom message</option>
+                    {templates
+                      .filter(template => !formData.channel || template.channel === formData.channel)
+                      .map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name} ({template.channel.toUpperCase()})
+                        </option>
+                      ))}
+                  </select>
+                  {templates.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      No templates available. <a href="/dashboard/templates" className="text-indigo-600 hover:text-indigo-500">Create one</a>
+                    </p>
+                  )}
+                </div>
+
                 {/* Channel Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -170,7 +276,13 @@ export default function SendNotificationPage() {
                       <button
                         key={channel.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, channel: channel.id })}
+                        onClick={() => {
+                          setFormData({ ...formData, channel: channel.id });
+                          // Clear template if channel doesn't match
+                          if (selectedTemplate && selectedTemplate.channel !== channel.id) {
+                            handleTemplateSelect('');
+                          }
+                        }}
                         className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                           formData.channel === channel.id
                             ? 'border-indigo-500 bg-indigo-50'
@@ -231,6 +343,40 @@ export default function SendNotificationPage() {
                   </div>
                 )}
 
+                {/* Template Variables */}
+                {selectedTemplate && selectedTemplate.variables.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Template Variables
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      {selectedTemplate.variables.map((variable) => (
+                        <div key={variable}>
+                          <label className="block text-sm font-medium text-blue-900 mb-1">
+                            {variable}
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.templateVariables[variable] || ''}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              templateVariables: {
+                                ...formData.templateVariables,
+                                [variable]: e.target.value
+                              }
+                            })}
+                            className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder={`Enter ${variable}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-blue-600 mt-2">
+                      💡 These values will replace {`{{variable}}`} placeholders in your template
+                    </p>
+                  </div>
+                )}
+
                 {/* Subject (Email only) */}
                 {formData.channel === 'email' && (
                   <div>
@@ -243,7 +389,13 @@ export default function SendNotificationPage() {
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Enter email subject"
+                      readOnly={selectedTemplate && selectedTemplate.subject}
                     />
+                    {selectedTemplate && selectedTemplate.subject && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        Subject is set by template: "{selectedTemplate.subject}"
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -259,7 +411,21 @@ export default function SendNotificationPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Enter your message here..."
                     required
+                    readOnly={!!selectedTemplate}
                   />
+                  {selectedTemplate && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Message content is from template: "{selectedTemplate.name}". Clear template to edit manually.
+                    </p>
+                  )}
+                  {selectedTemplate && selectedTemplate.variables.length > 0 && (
+                    <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Preview with variables:</p>
+                      <p className="text-sm text-gray-600 italic">
+                        {processTemplateContent(formData.message, formData.templateVariables)}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Schedule (Optional) */}
@@ -351,7 +517,7 @@ export default function SendNotificationPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Sent Today</span>
-                  <span className="font-semibold">1</span>
+                  <span className="font-semibold">4</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Success Rate</span>
@@ -359,8 +525,16 @@ export default function SendNotificationPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Templates</span>
-                  <span className="font-semibold">0</span>
+                  <span className="font-semibold">{templates.length}</span>
                 </div>
+                {selectedTemplate && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Using Template</span>
+                      <span className="font-semibold text-indigo-600">{selectedTemplate.name}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

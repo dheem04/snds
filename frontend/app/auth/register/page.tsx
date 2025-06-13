@@ -7,27 +7,52 @@ import { useAuth } from '../../contexts/AuthContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login(email, password);
-      toast.success('Login successful!');
+      await register(formData.email, formData.password, formData.name);
+      toast.success('Registration successful!');
       router.push('/dashboard');
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickFill = () => {
+    setFormData({
+      name: 'Demo User',
+      email: 'demo@example.com',
+      password: 'password123',
+      confirmPassword: 'password123',
+    });
   };
 
   return (
@@ -38,18 +63,34 @@ export default function LoginPage() {
             <span className="text-white text-xl font-bold">D</span>
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Or{' '}
-            <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-              create a new account
+            <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+              sign in to your existing account
             </Link>
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your full name"
+              />
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -60,8 +101,8 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Enter your email"
               />
@@ -76,10 +117,10 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Enter your password"
                 />
@@ -89,6 +130,36 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <div className="mt-1 relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
                     <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                   ) : (
                     <EyeIcon className="h-5 w-5 text-gray-400" />
@@ -107,10 +178,10 @@ export default function LoginPage() {
               {loading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  Creating account...
                 </div>
               ) : (
-                'Sign in'
+                'Create Account'
               )}
             </button>
           </div>
@@ -118,19 +189,13 @@ export default function LoginPage() {
           <div className="text-center space-y-2">
             <button
               type="button"
-              onClick={() => {
-                setEmail('demo@example.com');
-                setPassword('password123');
-              }}
+              onClick={handleQuickFill}
               className="text-sm text-indigo-600 hover:text-indigo-500 underline"
             >
-              Quick Fill Demo Credentials
+              Quick Fill Demo Data
             </button>
             <p className="text-sm text-gray-600">
               Demo: demo@example.com / password123
-            </p>
-            <p className="text-xs text-gray-500">
-              (Register first if this user doesn't exist)
             </p>
           </div>
         </form>

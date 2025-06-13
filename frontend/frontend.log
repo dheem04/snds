@@ -38,3 +38,6 @@ https://nextjs.org/telemetry
  ○ Compiling /logs ...
  ✓ Compiled /logs in 1065ms
  GET /logs 200 in 1109ms
+ ✓ Compiled in 99ms
+ GET /logs 200 in 108ms
+ GET /logs 200 in 32ms

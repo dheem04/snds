@@ -16,3 +16,7 @@ Processing notification job 2: email to dheemanthmadaiah@gmail.com
 Processing notification job 3: sms to +919686490654
 ✅ sms notification sent to +919686490654 in 328ms
 ✅ Job 3 completed successfully
+Processing notification job 4: email to dheemanthmadaiah@gmail.com
+📧 Email sent to dheemanthmadaiah@gmail.com: <2fc3dce6-ddc4-dad4-aa62-f9e60e87ca45@gmail.com>
+✅ email notification sent to dheemanthmadaiah@gmail.com in 902ms
+✅ Job 4 completed successfully

@@ -41,3 +41,10 @@ https://nextjs.org/telemetry
  ✓ Compiled in 99ms
  GET /logs 200 in 108ms
  GET /logs 200 in 32ms
+ GET / 200 in 114ms
+ GET /dashboard 200 in 56ms
+ GET /dashboard 200 in 70ms
+ GET /auth/login 200 in 191ms
+ GET /dashboard 200 in 42ms
+ GET /dashboard/send 200 in 39ms
+ GET /logs 200 in 37ms

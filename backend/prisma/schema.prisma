@@ -7,23 +7,139 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                      Int                      @id @default(autoincrement())
+  email                   String                   @unique
+  password                String
+  name                    String
+  role                    Role                     @default(USER)
+  isActive                Boolean                  @default(true)
+  emailVerified           Boolean                  @default(false)
+  preferences             Json?                    // Notification preferences
+  apiKey                  String?                  @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  
+  // Relations
+  notificationLogs        NotificationLog[]
+  scheduledNotifications  ScheduledNotification[]
+  templates               NotificationTemplate[]
+  campaigns               NotificationCampaign[]
+  apiUsage                ApiUsage[]               @relation("ApiUsageUser")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
 model NotificationLog {
-  id        Int      @id @default(autoincrement())
-  to        String
-  channel   String   // "email", "sms", "in-app"
-  message   String
-  status    String   // "success", "failed"
-  error     String?  // Optional, for error messages
-  attempt   Int      @default(1)  // ✅ New: track retry count
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  to          String
+  channel     String   // "email", "sms", "in-app"
+  message     String
+  subject     String?  // For emails
+  templateId  Int?
+  campaignId  Int?
+  status      String   // "success", "failed", "pending"
+  error       String?  // Optional, for error messages
+  attempt     Int      @default(1)
+  metadata    Json?    // Additional data like open rates, click rates
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  user        User?                 @relation(fields: [userId], references: [id])
+  template    NotificationTemplate? @relation(fields: [templateId], references: [id])
+  campaign    NotificationCampaign? @relation(fields: [campaignId], references: [id])
 }
 
 model ScheduledNotification {
+  id         Int      @id @default(autoincrement())
+  userId     Int?
+  to         String
+  channel    String
+  message    String
+  subject    String?
+  templateId Int?
+  campaignId Int?
+  sendAt     DateTime
+  status     String   @default("pending") // "pending", "queued", "sent", "cancelled"
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  user       User?                 @relation(fields: [userId], references: [id])
+  template   NotificationTemplate? @relation(fields: [templateId], references: [id])
+  campaign   NotificationCampaign? @relation(fields: [campaignId], references: [id])
+}
+
+model NotificationTemplate {
+  id                     Int                     @id @default(autoincrement())
+  userId                 Int
+  name                   String
+  channel                String                  // "email", "sms", "in-app"
+  subject                String?                 // For emails
+  content                String                  // Template content with variables
+  variables              Json?                   // Expected variables
+  isActive               Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  
+  // Relations
+  user                   User                    @relation(fields: [userId], references: [id])
+  notificationLogs       NotificationLog[]
+  scheduledNotifications ScheduledNotification[]
+  campaigns              NotificationCampaign[]
+}
+
+model NotificationCampaign {
+  id                     Int                     @id @default(autoincrement())
+  userId                 Int
+  name                   String
+  description            String?
+  templateId             Int?
+  channel                String
+  recipients             Json                    // Array of recipients
+  status                 String                  @default("draft") // "draft", "scheduled", "running", "completed", "paused"
+  scheduledAt            DateTime?
+  startedAt              DateTime?
+  completedAt            DateTime?
+  totalRecipients        Int                     @default(0)
+  successCount           Int                     @default(0)
+  failureCount           Int                     @default(0)
+  metadata               Json?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  
+  // Relations
+  user                   User                    @relation(fields: [userId], references: [id])
+  template               NotificationTemplate?   @relation(fields: [templateId], references: [id])
+  notificationLogs       NotificationLog[]
+  scheduledNotifications ScheduledNotification[]
+}
+
+model ApiUsage {
   id        Int      @id @default(autoincrement())
-  to        String
-  channel   String
-  message   String
-  sendAt    DateTime
-  status    String   @default("pending") // "pending", "queued", "sent"
+  userId    Int?
+  endpoint  String
+  method    String
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
+  
+  // Relations
+  user      User?    @relation(fields: [userId], references: [id], name: "ApiUsageUser")
+}
+
+model SystemHealth {
+  id              Int      @id @default(autoincrement())
+  service         String   // "email", "sms", "redis", "database"
+  status          String   // "healthy", "degraded", "down"
+  responseTime    Float?   // in milliseconds
+  errorMessage    String?
+  checkedAt       DateTime @default(now())
 }
